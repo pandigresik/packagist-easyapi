@@ -1,5 +1,5 @@
 {
-    "name": "easy/easyapi",
+    "name": "asligresik/easyapi",
     "description": "REST API generator for Codeigniter 4",
     "type": "library",
     "license": "MIT",
@@ -18,7 +18,7 @@
     },        
     "autoload": {
         "psr-4": {
-            "easy\\easyapi\\": "src"
+            "asligresik\\easyapi\\": "src"
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace easy\easyapi\Models;
+namespace asligresik\easyapi\Models;
 
 use CodeIgniter\Model;
 

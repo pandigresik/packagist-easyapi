@@ -1,5 +1,5 @@
 <?php
-namespace easy\easyapi\Controllers;
+namespace asligresik\easyapi\Controllers;
 
 /**
  * Class BaseController

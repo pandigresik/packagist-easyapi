@@ -1,5 +1,5 @@
 <?php namespace App\Entities;
-use easy\easyapi\Entities\BaseEntity;
+use asligresik\easyapi\Entities\BaseEntity;
 /**    
 * Class {{entityName}}
 * @OA\Schema(
