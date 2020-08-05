@@ -1,4 +1,5 @@
 <?php
+
 /**
  * CodeIgniter
  *
@@ -40,6 +41,7 @@ namespace asligresik\easyapi\Commands\API;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
+use Config\Autoload;
 
 /**
  * Creates a new seeder file.
@@ -93,7 +95,7 @@ class GeneratorCommand extends BaseCommand
 
 	private $db;
 	private $routes = [];
-	private $numericType = ['int','tinyint','mediumint','bigint'];
+	private $numericType = ['int', 'tinyint', 'mediumint', 'bigint'];
 	private $decimalType = ['decimal', 'float', 'double'];
 	private $dateType = ['date'];
 	/**
@@ -107,28 +109,28 @@ class GeneratorCommand extends BaseCommand
 		$this->db = db_connect();
 		$table = CLI::prompt('Type your name table to generate (table_name / all)?');
 		$listTables = [];
-		if($table != 'all'){
-			array_push($listTables,$table);
-		}else{
+		if ($table != 'all') {
+			array_push($listTables, $table);
+		} else {
 			CLI::write('Please wait, reading data from database .....');
 			$listTables = $this->listTable();
 		}
-		
-		foreach($listTables as $t){
-			CLI::write('Table name '.$t.' found', 'green');
+
+		foreach ($listTables as $t) {
+			CLI::write('Table name ' . $t . ' found', 'green');
 			$this->generateApi($t);
 		}
 
-		if(!empty($this->routes)){
+		if (!empty($this->routes)) {
 			CLI::write('Add below route to app/Config/Routes.php');
-			foreach($this->routes as $route){
-				CLI::write($route,'green');
+			foreach ($this->routes as $route) {
+				CLI::write($route, 'green');
 			}
 		}
 	}
-	
-	private function listTable(): Array
-	{					
+
+	private function listTable(): array
+	{
 		return $this->db->listTables();
 	}
 
@@ -141,7 +143,7 @@ class GeneratorCommand extends BaseCommand
 		$fields = $this->db->getFieldData($tableName);
 		$primaryKey = 'id';
 		$allowFields = [];
-		$validationRules = [];			
+		$validationRules = [];
 		$docPropertySchema = [];
 		foreach ($fields as $field) {
 			$validation = [];
@@ -154,23 +156,23 @@ class GeneratorCommand extends BaseCommand
 			if (in_array($field->type, $this->dateType)) {
 				array_push($validation, 'date');
 			}
-			if($field->max_length){
-				array_push($validation, 'max_length['.$field->max_length.']');
+			if ($field->max_length) {
+				array_push($validation, 'max_length[' . $field->max_length . ']');
 			}
 			if (!$field->nullable) {
 				array_push($validation, 'required');
 			}
-			if($field->primary_key){
+			if ($field->primary_key) {
 				$primaryKey = $field->name;
-				array_push($validation,'is_unique['.$tableName.'.'. $field->name.',id,{id}]');				
-			}else{
+				array_push($validation, 'is_unique[' . $tableName . '.' . $field->name . ',id,{id}]');
+			} else {
 				array_push($allowFields, $field->name);
 			}
-			if(!empty($validation)){
+			if (!empty($validation)) {
 				array_push($validationRules, "'" . $field->name . "' => '" . implode('|', $validation) . "'");
-			}	
-			
-			array_push($docPropertySchema,$this->generateDocProperty($field));
+			}
+
+			array_push($docPropertySchema, $this->generateDocProperty($field));
 		}
 		$docPropertySchemaStr = $this->swaggerSchemaDoc($modelName, $docPropertySchema);
 		$dataSource = [
@@ -179,8 +181,8 @@ class GeneratorCommand extends BaseCommand
 			'modelName' => $modelName,
 			'controllerName' => $controllerName,
 			'primaryKey' => $primaryKey,
-			'allowFields' => "'".implode("'," . PHP_EOL . "		'",$allowFields)."'",
-			'validationRules' => implode(','.PHP_EOL.'		',$validationRules),
+			'allowFields' => "'" . implode("'," . PHP_EOL . "		'", $allowFields) . "'",
+			'validationRules' => implode(',' . PHP_EOL . '		', $validationRules),
 			'docPropertySchema' => $docPropertySchemaStr
 		];
 		$this->createEntity($dataSource);
@@ -189,9 +191,9 @@ class GeneratorCommand extends BaseCommand
 		$this->appendRoute($controllerName);
 	}
 
-	private function getModelName($tableName):String
+	private function getModelName($tableName): String
 	{
-		return pascalize($tableName).'Model';
+		return pascalize($tableName) . 'Model';
 	}
 
 	private function getEntityName($tableName): String
@@ -214,41 +216,38 @@ class GeneratorCommand extends BaseCommand
 		return $stub;
 	}
 
-	private function createModel(Array $dataSource){		
-		CLI::write('Generate model '.$dataSource['modelName']);
-		$template = file_get_contents(__DIR__.'/template/model.stub');		
+	private function createModel(array $dataSource)
+	{
+		CLI::write('Generate model ' . $dataSource['modelName']);
+		$template = file_get_contents(__DIR__ . '/template/model.stub');
 		$replaceData = [
 			'modelName' => $dataSource['modelName'],
 			'tableName' => $dataSource['tableName'],
 			'entityName' => $dataSource['entityName'],
 			'primaryKey' => $dataSource['primaryKey'],
 			'allowFields' => $dataSource['allowFields'],
-			'validationRules' => $dataSource['validationRules']			
+			'validationRules' => $dataSource['validationRules']
 		];
-		$dataFile = $this->replaceTemplate($template,['{{modelName}}', '{{tableName}}', '{{entityName}}', '{{primaryKey}}','{{allowFields}}', '{{validationRules}}'], $replaceData);
-		$path = APPPATH.'/Models/'.$dataSource['modelName'].'.php';
-		if(!write_file($path, $dataFile)){
-			CLI::error('Generate model failed, set your folder writable '. $path);
-			return;
-		}
+		$dataFile = $this->replaceTemplate($template, ['{{modelName}}', '{{tableName}}', '{{entityName}}', '{{primaryKey}}', '{{allowFields}}', '{{validationRules}}'], $replaceData);
+		$path = 'Models/' . $dataSource['modelName'] . '.php';
+		$this->writeFile($path, $dataFile);
 	}
 
-	private function createEntity(Array $dataSource){
+	private function createEntity(array $dataSource)
+	{
 		CLI::write('Generate entity ' . $dataSource['entityName']);
 		$template = file_get_contents(__DIR__ . '/template/entity.stub');
-		$replaceData = [			
-			'entityName' => $dataSource['entityName'],			
-			'swaggerDoc' => $dataSource['docPropertySchema']			
+		$replaceData = [
+			'entityName' => $dataSource['entityName'],
+			'swaggerDoc' => $dataSource['docPropertySchema']
 		];
-		$dataFile = $this->replaceTemplate($template, ['{{entityName}}','{{swaggerDoc}}'], $replaceData);
-		$path = APPPATH . '/Entities/' . $dataSource['entityName'] . '.php';
-		if (!write_file($path, $dataFile)) {
-			CLI::error('Generate entity failed, set your folder writable ' . $path);
-			return;
-		}
+		$dataFile = $this->replaceTemplate($template, ['{{entityName}}', '{{swaggerDoc}}'], $replaceData);
+		$path = 'Entities/' . $dataSource['entityName'] . '.php';
+		$this->writeFile($path, $dataFile);
 	}
 
-	private function createController(Array $dataSource){
+	private function createController(array $dataSource)
+	{
 		CLI::write('Generate controller ' . $dataSource['controllerName']);
 		$template = file_get_contents(__DIR__ . '/template/controller.stub');
 		$replaceData = [
@@ -257,19 +256,18 @@ class GeneratorCommand extends BaseCommand
 			'tag' => $dataSource['entityName'],
 			'routeName' => lcfirst($dataSource['controllerName'])
 		];
-		$dataFile = $this->replaceTemplate($template, ['{{controllerName}}', '{{modelName}}', '{{tag}}','{{routeName}}'], $replaceData);
-		$path = APPPATH . '/Controllers/' . $dataSource['controllerName'] . '.php';
-		if (!write_file($path, $dataFile)) {
-			CLI::error('Generate controller failed, set your folder writable ' . $path);
-			return;
-		}
+		$dataFile = $this->replaceTemplate($template, ['{{controllerName}}', '{{modelName}}', '{{tag}}', '{{routeName}}'], $replaceData);
+		$path = 'Controllers/' . $dataSource['controllerName'] . '.php';
+		$this->writeFile($path, $dataFile);
 	}
 
-	private function appendRoute(String $controllerName){		
-		array_push($this->routes, '$routes->resource(\''.lcfirst($controllerName).'\');');
+	private function appendRoute(String $controllerName)
+	{
+		array_push($this->routes, '$routes->resource(\'' . lcfirst($controllerName) . '\');');
 	}
 
-	private function generateDocProperty($field){
+	private function generateDocProperty($field)
+	{
 		$type = 'string';
 		$format = '-';
 		if (in_array($field->type, $this->numericType)) {
@@ -284,31 +282,62 @@ class GeneratorCommand extends BaseCommand
 			$type = 'string';
 			$format = 'date';
 		}
-	$head = <<<DOC
+		$head = <<<DOC
 	/**
 	 * @OA\Property(		 		 		 
 	 *     description="{$field->name}",
 	 *     title="{$field->name}",
 	 *     type="{$type}",
 	 * 	   format="{$format}",	 
-DOC;		
-	$additional = [];		
-	
-	array_push($additional, '	 * 	   nullable='.($field->nullable ? 'true':'false').',');
-	
-	if ($field->max_length) {
-		array_push($additional, '	 * 	   maxLength=' .$field->max_length. ',');
-	}
-	$foot = <<<DOC
+DOC;
+		$additional = [];
+
+		array_push($additional, '	 * 	   nullable=' . ($field->nullable ? 'true' : 'false') . ',');
+
+		if ($field->max_length) {
+			array_push($additional, '	 * 	   maxLength=' . $field->max_length . ',');
+		}
+		$foot = <<<DOC
 	 * )
 	 *		 
 	 */
 DOC;
-	$fieldName = is_numeric($field->name) ? '_'. strval($field->name) : $field->name;
-	$fieldName = preg_replace('/\s+/','_',$fieldName);
-	return $head. PHP_EOL.implode(PHP_EOL,$additional).PHP_EOL.$foot.PHP_EOL.'	private $'. $fieldName.';';
+		$fieldName = is_numeric($field->name) ? '_' . strval($field->name) : $field->name;
+		$fieldName = preg_replace('/\s+/', '_', $fieldName);
+		return $head . PHP_EOL . implode(PHP_EOL, $additional) . PHP_EOL . $foot . PHP_EOL . '	private $' . $fieldName . ';';
 	}
-	private function swaggerSchemaDoc($modelName, $docPropertySchema){			
-	return implode(PHP_EOL,$docPropertySchema);	
+	private function swaggerSchemaDoc($modelName, $docPropertySchema)
+	{
+		return implode(PHP_EOL, $docPropertySchema);
+	}
+
+	/**
+	 * Write a file, catching any exceptions and showing a
+	 * nicely formatted error.
+	 *
+	 * @param string $path
+	 * @param string $content
+	 */
+	protected function writeFile(string $path, string $content)
+	{
+		$config = new Autoload();
+		$appPath = $config->psr4[APP_NAMESPACE];
+
+		$directory = dirname($appPath . $path);
+
+		if (!is_dir($directory)) {
+			mkdir($directory, 0777, true);
+		}
+
+		try {
+			write_file($appPath . $path, $content);
+		} catch (\Exception $e) {
+			$this->showError($e);
+			exit();
+		}
+
+		$path = str_replace($appPath, '', $path);
+
+		CLI::write(CLI::color('  created: ', 'green') . $path);
 	}
 }
