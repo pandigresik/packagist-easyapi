@@ -1,6 +1,6 @@
 <?php namespace App\Controllers;
  
-use easycode\easyapi\Controllers\BaseResourceController;
+use easy\easyapi\Controllers\BaseResourceController;
 class {{controllerName}} extends BaseResourceController
 {
     protected $modelName = 'App\Models\{{modelName}}';  

@@ -36,7 +36,7 @@
  * @filesource
  */
 
-namespace easycode\easyapi\Commands\API;
+namespace easy\easyapi\Commands\API;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;

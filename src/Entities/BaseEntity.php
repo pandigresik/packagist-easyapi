@@ -1,4 +1,4 @@
-<?php namespace easycode\easyapi\Entities;
+<?php namespace easy\easyapi\Entities;
 use CodeIgniter\Entity;
 
 class BaseEntity extends Entity
