@@ -105,9 +105,7 @@ class PublishCommand extends BaseCommand
     private function recursive_copy($src, $dst)
     {
         $dir = opendir($src);
-        @mkdir($dst);
-        CLI::write($src, 'green');
-        CLI::write($dst, 'red');
+        @mkdir($dst);        
         while (($file = readdir($dir))) {
             if (($file != '.') && ($file != '..')) {
                 if (is_dir($src . '/' . $file)) {

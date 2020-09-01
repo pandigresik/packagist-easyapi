@@ -22,7 +22,17 @@ If there is no error, system will generate for you controller, model and entity 
 - Generate api.json using command `./vendor/bin/openapi -o ./public/assets/api.json ./app` to show API docs using swagger using datasource format json (optional)
 - Open API documentation in http://localhost:8080/swagger
 
+## Feature
+- Support searching data using multiple column
+- Support searching date column
+- Support pagination
 
+## Example
+- Search with multiple column 
+    ```curl -X GET "http://localhost:8080/wpOptions?search[option_name]=%mailserver%&search[autoload]=yes&search[option_id][start]=17&search[option_id][end]=18&limit=20" -H  "accept: application/json" -H  "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJodHRwOlwvXC9sb2NhbGhvc3Q6ODA4MCIsImlhdCI6MTM1Njk5OTUyNCwiZW1haWwiOiJ0ZXMiLCJuYmYiOjEzNTcwMDAwMDB9.Pg4laqjebIDLzoFDS0ySnOKOueKLWjnXwWILsSmVsVI"
+    ```
+
+    ```http://localhost:8080/wpOptions?search[option_name]=%mailserver%&search[autoload]=yes&search[option_id][start]=17&search[option_id][end]=18&limit=20```
 
 ## Todo
 - [X] create example using this application
