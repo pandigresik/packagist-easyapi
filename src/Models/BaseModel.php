@@ -8,20 +8,27 @@ class BaseModel extends Model
 {
     protected $selectColumn;
 
-    public function search($search)
+    public function search($search, $order = [])
     {
         if (!empty($search)) {
             foreach ($search as $k => $v) {
                 if (is_array($v)) {
-                    $this->where($k.' between '.$v['start'].' and '.$v['end']);
+                    $this->where($k.' between '.$this->escape($v['start']).' and '.$this->escape($v['end']));
                 } else {
                     $hasLikeExpression = $this->getLikeExpression($v);
-                    if (!is_null($hasLikeExpression)) {
-                        $this->like($k, $v, $hasLikeExpression);
+                    if (!is_null($hasLikeExpression)) {                        
+                        $this->like($k, str_replace('%','',$v), $hasLikeExpression);
                     } else {
                         $this->where($k, $v);
                     }
                 }
+            }
+        }
+
+        if (!empty($order)) {
+            $order = is_array($order) ? $order : [$order => 'ASC'];
+            foreach ($order as $k => $v) {
+                $this->orderBy($k, $v);
             }
         }
 

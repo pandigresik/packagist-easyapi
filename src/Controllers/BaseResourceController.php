@@ -16,7 +16,7 @@ namespace asligresik\easyapi\Controllers;
 
 
 use CodeIgniter\RESTful\ResourceController;
-
+use Config\Database;
 class BaseResourceController extends ResourceController
 {
 	/**
@@ -76,12 +76,19 @@ out more about Swagger at
 	 *
 	 * @return array	an array
 	 */
+	protected $db;       
+	public function __construct()
+	{
+		$this->db = Database::connect();
+	} 
 	public function index()
 	{
 		$search = $this->request->getGet('search');
+		$order = $this->request->getGet('order');
 		$page = $this->request->getGet('page') ?? 1;
 		$limit = $this->request->getGet('limit') ?? $this->limit;				
-		$data = $this->model->search($search)->paginate($limit, 'default', $page);
+		$data = $this->model->search($search,$order)->paginate($limit, 'default', $page);
+		$this->writeLog();
 		$pagination = [
 			'currentPage' => $this->model->pager->getCurrentPage(),
 			'totalPage' => $this->model->pager->getPageCount(),
@@ -97,13 +104,13 @@ out more about Swagger at
 	public function show($id = null)
 	{
 		$record = $this->model->find($id);
+		$this->writeLog();
 		if (!$record) {
 			return $this->failNotFound(sprintf(
 				'item with id %d not found',
 				$id
 			));
-		}
-
+		}		
 		return $this->respond($record);
 	}
 
@@ -128,7 +135,7 @@ out more about Swagger at
 		if (!$this->model->insert($data)) {
 			return $this->fail($this->model->errors());
 		}
-
+		$this->writeLog();
 		return $this->respondCreated($data, 'product created');
 	}
 
@@ -155,7 +162,7 @@ out more about Swagger at
 		if (!$this->model->save($updateData)) {
 			return $this->fail($this->model->errors());
 		}
-
+		$this->writeLog();
 		return $this->respond($data, 200, 'data updated');
 	}
 
@@ -173,7 +180,14 @@ out more about Swagger at
 				$id
 			));
 		}
-
+        $this->writeLog();
 		return $this->respondDeleted(['id' => $id], 'data deleted');
+	}
+
+	protected function writeLog(){
+		if(ENVIRONMENT !== 'production'){
+			$query = $this->db->getLastQuery();
+      		log_message('critical', (string)$query);
+		}
 	}	
 }
