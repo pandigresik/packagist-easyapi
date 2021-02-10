@@ -90,30 +90,8 @@ class BaseModel extends Model
 
         return $this;
     }
-
-    // protected $allowedFields   = [
-    //     'product_code',
-    //     'product_name',
-    // ];
-    // protected $validationRules = [
-    //     'product_code' => 'required|alpha_numeric|exact_length[5]|is_unique[product.product_code,id,{id}]',
-    //     'product_name' => 'required|alpha_numeric_space|min_length[3]|max_length[255]|is_unique[product.product_name,id,{id}]',
-    // ];
-
-    // filter on create/update data if necessary
-    // public function setProductCode(string $productCode): self
-    // {
-    //     $this->attributes['product_code'] = strtoupper($productCode);
-    //     return $this;
-    // }
-
-    // filter on create/update data if necessary
-    // public function setProductName(string $productName): self
-    // {
-    //     $this->attributes['product_name'] = ucwords($productName);
-    //     return $this;
-    // }
-    protected function builder(string $table = null)
+    
+    public function builder(string $table = null)
     {
         $builder = parent::builder($table);
         if ($this->getSelectColumn()) {
