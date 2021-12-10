@@ -82,6 +82,10 @@ class PublishCommand extends BaseCommand
         $publicSource = $this->sourcePath . '/public';
         $publicDestination = dirname($appPath) . '/public';        
         $this->recursive_copy($publicSource, $publicDestination);
+
+        $templateSource = $this->sourcePath.'/Commands/API/template';
+        $templateDestination = $appPath.'/Commands/API/template';
+        $this->recursive_copy($templateSource, $templateDestination);
     }
     
     /**
@@ -102,19 +106,28 @@ class PublishCommand extends BaseCommand
 * and sub directories to $destination folder
 */
 
-    private function recursive_copy($src, $dst)
+    function recursive_copy($source, $dest)
     {
-        $dir = opendir($src);
-        @mkdir($dst);        
-        while (($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src . '/' . $file)) {
-                    $this->recursive_copy($src . '/' . $file, $dst . '/' . $file);
-                } else {
-                    copy($src . '/' . $file, $dst . '/' . $file);
+        if(is_dir($source))
+        {
+            if(!is_dir($dest))
+            {
+                mkdir($dest, 0777, true);
+            }
+
+            $dir_items = array_diff(scandir($source), array('..', '.'));
+
+            if(count($dir_items) > 0)
+            {
+                foreach($dir_items as $v)
+                {
+                    $this->recursive_copy(rtrim(rtrim($source, '/'), '\\').DIRECTORY_SEPARATOR.$v, rtrim(rtrim($dest, '/'), '\\').DIRECTORY_SEPARATOR.$v);
                 }
             }
         }
-        closedir($dir);
+        elseif(is_file($source))
+        {
+            copy($source, $dest);
+        }
     }
 }
