@@ -42,7 +42,6 @@ namespace asligresik\easyapi\Commands\API;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use Config\Autoload;
-use Config\Services;
 
 /**
  * Creates a new seeder file.
@@ -91,8 +90,9 @@ class GeneratorCommand extends BaseCommand
      * @var array
      */
     protected $options = [
-		'-p' => 'set basepath',
-	];
+        '-p' => 'set basepath',
+        '-t' => 'set table name',
+    ];
 
     private $basePath;
     private $db;
@@ -105,14 +105,20 @@ class GeneratorCommand extends BaseCommand
      * Generate api.
      */
     public function run(array $params)
-    {              
+    {
         $this->setBasepath($params);
+        $tableName = $params['-t'] ?? CLI::getOption('t');
         helper('inflector');
         $this->db = db_connect();
-        $table = CLI::prompt('Type your name table to generate (table_name [using , as separator example users,posts,jobs] / all)?');
-        CLI::write('Please wait, reading data from database .....');
-        $listAllTables = $this->listTable();
         $listTables = [];
+        if (empty($tableName)) {
+            $table = CLI::prompt('Type your name table to generate (table_name [using , as separator example users,posts,jobs] / all)?');
+            CLI::write('Please wait, reading data from database .....');            
+        }else{
+            $table = $tableName;
+        }
+        
+        $listAllTables = $this->listTable();
         if ('all' != $table) {
             $selectedTables = explode(',', $table);
             foreach ($selectedTables as $t) {
@@ -135,19 +141,6 @@ class GeneratorCommand extends BaseCommand
                 CLI::write($route, 'green');
             }
         }
-        		
-		
-    }
-
-    private function setBasepath($params){
-        $config = new Autoload();  
-        $this->basePath = $config->psr4[APP_NAMESPACE];        
-        $path       = $params['-p'] ?? CLI::getOption('p');
-		
-
-        if (!empty($path)) {
-           $this->basePath .= $path;
-        }
     }
 
     /**
@@ -166,7 +159,7 @@ class GeneratorCommand extends BaseCommand
         }
 
         try {
-            write_file($appPath.$path, $content);            
+            write_file($appPath.$path, $content);
         } catch (\Exception $e) {
             $this->showError($e);
             exit();
@@ -175,6 +168,17 @@ class GeneratorCommand extends BaseCommand
         $path = str_replace($appPath, '', $path);
 
         CLI::write(CLI::color('  created: ', 'green').$path);
+    }
+
+    private function setBasepath($params)
+    {
+        $config = new Autoload();
+        $this->basePath = $config->psr4[APP_NAMESPACE];
+        $path = $params['-p'] ?? CLI::getOption('p');
+
+        if (!empty($path)) {
+            $this->basePath .= $path;
+        }
     }
 
     private function listTable(): array
@@ -207,13 +211,13 @@ class GeneratorCommand extends BaseCommand
             if ($field->max_length) {
                 array_push($validation, 'max_length['.$field->max_length.']');
             }
-            
-            if(property_exists($field, 'nullable')){
+
+            if (property_exists($field, 'nullable')) {
                 if (!$field->nullable) {
                     array_push($validation, 'required');
-                }    
+                }
             }
-            
+
             if ($field->primary_key) {
                 $primaryKey = $field->name;
                 array_push($validation, 'is_unique['.$tableName.'.'.$field->name.',id,{id}]');
@@ -269,7 +273,7 @@ class GeneratorCommand extends BaseCommand
 
     private function createModel(array $dataSource)
     {
-        CLI::write('Generate model '.$dataSource['modelName']);        
+        CLI::write('Generate model '.$dataSource['modelName']);
         $template = $this->getTemplateFile('model.stub');
         $replaceData = [
             'modelName' => $dataSource['modelName'],
@@ -286,7 +290,7 @@ class GeneratorCommand extends BaseCommand
 
     private function createEntity(array $dataSource)
     {
-        CLI::write('Generate entity '.$dataSource['entityName']);        
+        CLI::write('Generate entity '.$dataSource['entityName']);
         $template = $this->getTemplateFile('entity.stub');
         $replaceData = [
             'entityName' => $dataSource['entityName'],
@@ -342,9 +346,9 @@ class GeneratorCommand extends BaseCommand
 	 * 	   format="{$format}",	 
 DOC;
         $additional = [];
-        if(property_exists($field, 'nullable')){
+        if (property_exists($field, 'nullable')) {
             array_push($additional, '	 * 	   nullable='.($field->nullable ? 'true' : 'false').',');
-        }        
+        }
 
         if ($field->max_length) {
             array_push($additional, '	 * 	   maxLength='.$field->max_length.',');
@@ -365,16 +369,17 @@ DOC;
         return implode(PHP_EOL, $docPropertySchema);
     }
 
-    private function getTemplateFile($fileName){
+    private function getTemplateFile($fileName)
+    {
         $config = new Autoload();
         $appPath = $config->psr4[APP_NAMESPACE];
         $filePath = $appPath."/Commands/API/template/{$fileName}";
-        if(file_exists($filePath)){
+        if (file_exists($filePath)) {
             $template = file_get_contents($filePath);
-        }else{
-            $template = file_get_contents(__DIR__."/template/$fileName");
+        } else {
+            $template = file_get_contents(__DIR__."/template/{$fileName}");
         }
-        
+
         return $template;
     }
 }
