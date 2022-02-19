@@ -132,11 +132,12 @@ out more about Swagger at
 	public function create()
 	{
 		$data = $this->request->getPost();
+		$dataInsert = $this->model->getDataInsert($data);
 		if (!$this->model->insert($data)) {
 			return $this->fail($this->model->errors());
 		}
 		$this->writeLog();
-		return $this->respondCreated($data, 'product created');
+		return $this->respondCreated($dataInsert, $this->model->getAliasTable().' created');
 	}
 
 	/**

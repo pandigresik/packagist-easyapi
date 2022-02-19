@@ -7,7 +7,7 @@ use CodeIgniter\Model;
 class BaseModel extends Model
 {
     protected $selectColumn;
-
+    private $aliasTable;
     public function search($search, $order = [])
     {
         if (!empty($search)) {
@@ -141,5 +141,29 @@ class BaseModel extends Model
             default:
                 return null;
         }
+    }
+
+    public function getDataInsert($data){
+        return !empty($this->tempData['data']) ? array_merge($this->tempData['data'], $data) : $data;
+    }
+
+    /**
+     * Get the value of aliasTable
+     */ 
+    public function getAliasTable()
+    {
+        return $this->aliasTable ?? $this->getTable() ;
+    }
+
+    /**
+     * Set the value of aliasTable
+     *
+     * @return  self
+     */ 
+    public function setAliasTable($aliasTable)
+    {
+        $this->aliasTable = $aliasTable;
+
+        return $this;
     }
 }
