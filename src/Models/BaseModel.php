@@ -7,7 +7,7 @@ use CodeIgniter\Model;
 class BaseModel extends Model
 {
     protected $selectColumn;
-    private $aliasTable;
+    protected $aliasTable;
     public function search($search, $order = [])
     {
         if (!empty($search)) {
