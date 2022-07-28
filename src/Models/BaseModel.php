@@ -166,4 +166,8 @@ class BaseModel extends Model
 
         return $this;
     }
+
+    protected function writeLog(){		
+      	log_message('critical', $this->getLastQuery());		
+	}
 }

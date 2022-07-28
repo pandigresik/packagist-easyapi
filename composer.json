@@ -13,7 +13,7 @@
     "prefer-stable": true,
     "require": {
         "php": ">=7.2",
-        "codeigniter4/framework": "^4.1",
+        "codeigniter4/framework": "^4.2",
         "zircote/swagger-php": "^3.0"
     },        
     "autoload": {
