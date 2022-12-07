@@ -23,7 +23,7 @@ With easyAPI you can generate REST API less than 5 minutes.
 
 ## Generate REST API
 
-- `php spark api:generate` or `php spark api:generate -n Modules\API\` to generate file in spesific folder
+- `php spark api:generate` or `php spark api:generate -p Modules\API\` to generate file in spesific folder
   after that, system will ask you table name will generate that REST API. We can choose one table or all, if we want generate all write `all` or write one table name exist in your database
   If there is no error, system will generate for you controller, model and entity file.
 - Last you must add new route will display in last command to `app/Config/Routes.php`.
