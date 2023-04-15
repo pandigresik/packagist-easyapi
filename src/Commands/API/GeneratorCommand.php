@@ -108,6 +108,10 @@ class GeneratorCommand extends BaseCommand
     {
         $this->setBasepath($params);
         $tableName = $params['-t'] ?? CLI::getOption('t');
+        $modules =  $params['-p'] ?? CLI::getOption('p');
+        if(!empty($modules)){
+            $modules = '\\'.str_replace('/','\\',substr($modules,0,-1));
+        }
         helper('inflector');
         $this->db = db_connect();
         $listTables = [];
@@ -132,7 +136,7 @@ class GeneratorCommand extends BaseCommand
 
         foreach ($listTables as $t) {
             CLI::write('Table name '.$t.' found', 'green');
-            $this->generateApi($t);
+            $this->generateApi($t, $modules);
         }
 
         if (!empty($this->routes)) {
@@ -186,7 +190,7 @@ class GeneratorCommand extends BaseCommand
         return $this->db->listTables();
     }
 
-    private function generateApi(string $tableName)
+    private function generateApi(string $tableName, string $modules)
     {
         helper('filesystem');
         $modelName = $this->getModelName($tableName);
@@ -235,6 +239,7 @@ class GeneratorCommand extends BaseCommand
             'tableName' => $tableName,
             'entityName' => $entityName,
             'modelName' => $modelName,
+            'modules' => $modules,
             'controllerName' => $controllerName,
             'primaryKey' => $primaryKey,
             'allowFields' => "'".implode("',".PHP_EOL."		'", $allowFields)."'",
@@ -282,8 +287,9 @@ class GeneratorCommand extends BaseCommand
             'primaryKey' => $dataSource['primaryKey'],
             'allowFields' => $dataSource['allowFields'],
             'validationRules' => $dataSource['validationRules'],
+            'modules' => $dataSource['modules']
         ];
-        $dataFile = $this->replaceTemplate($template, ['{{modelName}}', '{{tableName}}', '{{entityName}}', '{{primaryKey}}', '{{allowFields}}', '{{validationRules}}'], $replaceData);
+        $dataFile = $this->replaceTemplate($template, ['{{modelName}}', '{{tableName}}', '{{entityName}}', '{{primaryKey}}', '{{allowFields}}', '{{validationRules}}', '{{modules}}'], $replaceData);
         $path = 'Models/'.$dataSource['modelName'].'.php';
         $this->writeFile($path, $dataFile);
     }
@@ -295,8 +301,9 @@ class GeneratorCommand extends BaseCommand
         $replaceData = [
             'entityName' => $dataSource['entityName'],
             'swaggerDoc' => $dataSource['docPropertySchema'],
+            'modules' => $dataSource['modules']
         ];
-        $dataFile = $this->replaceTemplate($template, ['{{entityName}}', '{{swaggerDoc}}'], $replaceData);
+        $dataFile = $this->replaceTemplate($template, ['{{entityName}}', '{{swaggerDoc}}', '{{modules}}'], $replaceData);
         $path = 'Entities/'.$dataSource['entityName'].'.php';
         $this->writeFile($path, $dataFile);
     }
@@ -310,8 +317,9 @@ class GeneratorCommand extends BaseCommand
             'modelName' => $dataSource['modelName'],
             'tag' => $dataSource['entityName'],
             'routeName' => lcfirst($dataSource['controllerName']),
+            'modules' => $dataSource['modules']
         ];
-        $dataFile = $this->replaceTemplate($template, ['{{controllerName}}', '{{modelName}}', '{{tag}}', '{{routeName}}'], $replaceData);
+        $dataFile = $this->replaceTemplate($template, ['{{controllerName}}', '{{modelName}}', '{{tag}}', '{{routeName}}', '{{modules}}'], $replaceData);
         $path = 'Controllers/'.$dataSource['controllerName'].'.php';
         $this->writeFile($path, $dataFile);
     }

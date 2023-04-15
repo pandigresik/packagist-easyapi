@@ -3,6 +3,7 @@
     "description": "REST API generator for Codeigniter 4",
     "type": "library",
     "license": "MIT",
+    "version": "v0.11",
     "authors": [
         {
             "name": "ahmad",

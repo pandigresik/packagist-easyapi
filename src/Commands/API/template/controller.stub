@@ -1,9 +1,9 @@
-<?php namespace App\Controllers;
+<?php namespace App{{modules}}\Controllers;
  
 use asligresik\easyapi\Controllers\BaseResourceController;
 class {{controllerName}} extends BaseResourceController
 {
-    protected $modelName = 'App\Models\{{modelName}}';  
+    protected $modelName = 'App{{modules}}\Models\{{modelName}}';  
 
      /**
      * @OA\Get(
