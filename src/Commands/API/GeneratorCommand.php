@@ -75,7 +75,7 @@ class GeneratorCommand extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'php spark api:generate or php spark api:generate -p Modules/Api/';
+    protected $usage = 'php spark api:generate or php spark api:generate -p Modules/Api/ -i created_by,updated_by,created_at,updated_at';
 
     /**
      * the Command's Arguments.
@@ -92,6 +92,7 @@ class GeneratorCommand extends BaseCommand
     protected $options = [
         '-p' => 'set basepath',
         '-t' => 'set table name',
+        '-i' => 'ignore validation column'
     ];
 
     private $basePath;
@@ -100,7 +101,7 @@ class GeneratorCommand extends BaseCommand
     private $numericType = ['int', 'tinyint', 'mediumint', 'bigint'];
     private $decimalType = ['decimal', 'float', 'double'];
     private $dateType = ['date', 'datetime'];
-
+    private $ignoreFields = [];
     /**
      * Generate api.
      */
@@ -109,6 +110,12 @@ class GeneratorCommand extends BaseCommand
         $this->setBasepath($params);
         $tableName = $params['-t'] ?? CLI::getOption('t');
         $modules =  $params['-p'] ?? CLI::getOption('p');
+        $ignoreValidation = $params['-i'] ?? CLI::getOption('i');
+        
+        if(!empty($ignoreValidation)){
+            $this->ignoreFields = explode(',',$ignoreValidation);
+        }
+
         if(!empty($modules)){
             $modules = '\\'.str_replace('/','\\',substr($modules,0,-1));
         }
@@ -229,7 +236,9 @@ class GeneratorCommand extends BaseCommand
                 array_push($allowFields, $field->name);
             }
             if (!empty($validation)) {
-                array_push($validationRules, "'".$field->name."' => '".implode('|', $validation)."'");
+                if(!in_array($field->name ,$this->ignoreFields)){
+                    array_push($validationRules, "'".$field->name."' => '".implode('|', $validation)."'");
+                }                
             }
 
             array_push($docPropertySchema, $this->generateDocProperty($field));
